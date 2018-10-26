@@ -7,8 +7,7 @@ const cors = require('cors');
 const items = require('./routes/api/items');
 
 const app = express();
-const Data = require ('./models/Item');
-
+const Data = require('./models/Item');
 
 //Bodyparser Middleware
 app.use(bodyParser.json());
@@ -18,8 +17,13 @@ app.use(cors());
 const db = require('./config/keys').mongoURI;
 
 //Connect to Mongo
+// mongoose
+//   .connect(db)
 mongoose
-  .connect(db)
+  .connect(
+    db,
+    { useNewUrlParser: true }
+  )
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err));
 
@@ -38,16 +42,16 @@ mongoose
 // Use Routes
 app.use('/api/items', items);
 
-const port = process.env.PORT || 5000;
+// const port = process.env.PORT || 5000;
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+// app.listen(port, () => console.log(`Server started on port ${port}`));
 
 app.get('/getTrendingTVshows', (req, res) => {
   const URL =
     'https://api.themoviedb.org/3/trending/tv/day?api_key=10255e7670c6cf88d80320c2ddf5f034';
 
   axios
-    .get(URL) 
+    .get(URL)
     .then(function(response) {
       console.log(response.data);
       res.send(response.data);
@@ -55,29 +59,31 @@ app.get('/getTrendingTVshows', (req, res) => {
     .catch(function(error) {
       console.log(error);
     });
-  });
+});
 
-app.get('/get',(req,res)=>{
+app.get('/get', (req, res) => {
   Data.find()
-  .then(data=>{
-    console.log(data);
-    res.send(data);
-    res.status(200).json(data);
-  })
-  .catch(error=>{
-    res.status(404).json(error);
-  });
-})
+    .then(data => {
+      console.log(data);
+      res.send(data);
+      res.status(200).json(data);
+    })
+    .catch(error => {
+      res.status(404).json(error);
+    });
+});
 
 //localhost:5000/postcreate
 app.post('/get', (req, res) => {
   console.log(req.body);
-  const data = [{
-    name: req.body.name,
-    release_date: req.body.Release_date,
-    overview: req.body.Overview,
-    id: req.body.Id 
-  }];
+  const data = [
+    {
+      name: req.body.name,
+      first_air_date: req.body.first_air_date,
+      overview: req.body.overview,
+      poster_path: req.body.poster_path
+    }
+  ];
   Data.insertMany(data)
     .then(res => {
       res.send(res);
@@ -86,9 +92,9 @@ app.post('/get', (req, res) => {
     .catch(error => {
       res.status(400).json(error);
     });
-}); 
+  
+});
 
 app.listen(5000, () => {
   console.log('Server listening on port 5000');
 });
-
